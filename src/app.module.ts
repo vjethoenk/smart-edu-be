@@ -9,6 +9,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { CategoriesModule } from './categories/categories.module';
 import { RoleModule } from './role/role.module';
+import { S3Service } from './common/services/s3/s3.service';
+import { HlsService } from './common/services/hls/hls.service';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -28,10 +31,14 @@ import { RoleModule } from './role/role.module';
     CategoriesModule,
 
     RoleModule,
+
+    VideoModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    S3Service,
+    HlsService,
     // {
     //   provide: APP_GUARD,
     //   useClass: JwtAuthGuard,
