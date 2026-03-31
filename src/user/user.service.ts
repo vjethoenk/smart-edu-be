@@ -1,13 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, RegisterUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import mongoose, { Model } from 'mongoose';
 import { genSaltSync, hashSync, compareSync } from 'bcrypt';
+import { Role, RoleDocument } from 'src/role/schemas/role.schema';
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
+  ) {}
 
   getHashPassword = (password: string) => {
     const saltRounds = 10;
@@ -38,7 +42,14 @@ export class UserService {
   }
 
   findOneByUserName(username: string) {
-    return this.userModel.findOne({ email: username });
+    return this.userModel
+      .findOne({
+        email: username,
+      })
+      .populate({
+        path: 'role',
+        select: { name: 1 },
+      });
   }
 
   checkUserPassword(password: string, hash: string) {
@@ -82,4 +93,25 @@ export class UserService {
       select: { name: 1 },
     });
   };
+
+  async register(registerDto: RegisterUserDto) {
+    const getByRoleUser = await this.roleModel.findOne({ name: 'USER' });
+    const pass = this.getHashPassword(registerDto.password);
+    registerDto.password = pass;
+
+    if (getByRoleUser?._id) {
+      registerDto.role = getByRoleUser._id;
+    } else {
+      console.error('Không tìm thấy role user để gán!');
+    }
+
+    const newUser = await this.userModel.create({ ...registerDto });
+
+    console.log('UserId:', newUser._id);
+
+    return {
+      message: 'Đăng ký thành công',
+      userId: newUser?._id,
+    };
+  }
 }

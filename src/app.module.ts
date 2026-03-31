@@ -12,6 +12,7 @@ import { RoleModule } from './role/role.module';
 import { S3Service } from './common/services/s3/s3.service';
 import { HlsService } from './common/services/hls/hls.service';
 import { VideoModule } from './video/video.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -33,6 +34,8 @@ import { VideoModule } from './video/video.module';
     RoleModule,
 
     VideoModule,
+
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

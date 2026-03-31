@@ -1,11 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Role, RoleDocument } from './schemas/role.schema';
+import { Model } from 'mongoose';
+import { IUser } from 'src/user/user.interface';
 
 @Injectable()
 export class RoleService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
+  constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
+
+  async create(createRoleDto: CreateRoleDto, user: IUser) {
+    const checkName = await this.roleModel.findOne({
+      name: createRoleDto.name,
+    });
+    if (checkName) {
+      throw new BadRequestException('Name đã tồn tại');
+    }
+    return await this.roleModel.create({
+      ...createRoleDto,
+      createBy: {
+        _id: user._id,
+        email: user.email,
+      },
+    });
   }
 
   findAll() {

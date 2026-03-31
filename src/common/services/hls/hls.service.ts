@@ -33,11 +33,9 @@ export class HlsService {
         .output(outputPath)
         .on('start', (cmd) => console.log('FFmpeg cmd:', cmd))
         .on('end', () => {
-          console.log('✅ Convert HLS done');
           resolve(true);
         })
         .on('error', (err) => {
-          console.error('❌ FFmpeg error:', err);
           reject(err);
         })
         .run();
