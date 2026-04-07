@@ -21,8 +21,8 @@ export class RoleController {
   @Post()
   @Public()
   @ResponseMessage('Create a role')
-  create(@Body() createRoleDto: CreateRoleDto, @User() user: IUser) {
-    return this.roleService.create(createRoleDto, user);
+  create(@Body() createRoleDto: CreateRoleDto) {
+    return this.roleService.create(createRoleDto);
   }
 
   @Get()

@@ -10,7 +10,7 @@ import { IUser } from 'src/user/user.interface';
 export class RoleService {
   constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
 
-  async create(createRoleDto: CreateRoleDto, user: IUser) {
+  async create(createRoleDto: CreateRoleDto) {
     const checkName = await this.roleModel.findOne({
       name: createRoleDto.name,
     });
@@ -19,10 +19,10 @@ export class RoleService {
     }
     return await this.roleModel.create({
       ...createRoleDto,
-      createBy: {
-        _id: user._id,
-        email: user.email,
-      },
+      // createBy: {
+      //   _id: user._id,
+      //   email: user.email,
+      // },
     });
   }
 
