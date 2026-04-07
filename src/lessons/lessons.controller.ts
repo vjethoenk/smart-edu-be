@@ -24,11 +24,11 @@ export class LessonsController {
     return this.lessonsService.create(createLessonDto, user);
   }
 
-  @Get(':id')
+  @Get()
   @Public()
   @ResponseMessage('Hiển thị danh sách bài học thành công!')
-  findAll(id: string) {
-    return this.lessonsService.findAll(id);
+  findAll() {
+    return this.lessonsService.findAll();
   }
 
   @Get(':id')

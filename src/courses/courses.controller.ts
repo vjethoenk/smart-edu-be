@@ -11,7 +11,7 @@ import {
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { ResponseMessage, User } from 'src/decorator/customize';
+import { Public, ResponseMessage, User } from 'src/decorator/customize';
 import type { IUser } from 'src/user/user.interface';
 
 @Controller('courses')
@@ -31,6 +31,7 @@ export class CoursesController {
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
   }

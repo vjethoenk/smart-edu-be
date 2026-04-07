@@ -21,8 +21,8 @@ export class LessonsService {
     });
   }
 
-  findAll(id: string) {
-    return this.lessonModel.find({ sectionId: id }).exec();
+  findAll() {
+    return this.lessonModel.find().exec();
   }
 
   findOne(id: string) {
