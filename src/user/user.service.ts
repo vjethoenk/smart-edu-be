@@ -107,11 +107,6 @@ export class UserService {
 
     const newUser = await this.userModel.create({ ...registerDto });
 
-    console.log('UserId:', newUser._id);
-
-    return {
-      message: 'Đăng ký thành công',
-      userId: newUser?._id,
-    };
+    return newUser;
   }
 }

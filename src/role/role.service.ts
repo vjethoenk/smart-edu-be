@@ -27,18 +27,24 @@ export class RoleService {
   }
 
   findAll() {
-    return `This action returns all role`;
+    return this.roleModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
+  findOne(id: string) {
+    return this.roleModel.findById(id).exec();
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+  update(id: string, updateRoleDto: UpdateRoleDto, user: IUser) {
+    return this.roleModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateRoleDto, updateBy: { _id: user._id, email: user.email } },
+        { new: true },
+      )
+      .exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
+  remove(id: string) {
+    return this.roleModel.findByIdAndDelete(id).exec();
   }
 }

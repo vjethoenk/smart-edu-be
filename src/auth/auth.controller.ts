@@ -35,7 +35,6 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-
     return { user };
   }
 

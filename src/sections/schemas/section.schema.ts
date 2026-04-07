@@ -1,15 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+import { Course } from 'src/courses/schemas/course.schema';
 
-export type CategoryDocument = HydratedDocument<Category>;
+export type SectionDocument = HydratedDocument<Section>;
 
 @Schema({ timestamps: true })
-export class Category {
+export class Section {
   @Prop()
-  name!: string;
+  title!: string;
 
-  @Prop()
-  description!: string;
+  // @Prop()
+  // oder!: number;
+
+  @Prop({ type: Object, ref: Course.name })
+  courseId!: Types.ObjectId;
 
   @Prop()
   createdAt!: Date;
@@ -42,4 +46,4 @@ export class Category {
   };
 }
 
-export const CategorySchema = SchemaFactory.createForClass(Category);
+export const SectionSchema = SchemaFactory.createForClass(Section);

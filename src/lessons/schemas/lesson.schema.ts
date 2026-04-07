@@ -1,15 +1,28 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+import { Section } from 'src/sections/schemas/section.schema';
 
-export type CategoryDocument = HydratedDocument<Category>;
+export type LessonDocument = HydratedDocument<Lesson>;
 
 @Schema({ timestamps: true })
-export class Category {
+export class Lesson {
   @Prop()
-  name!: string;
+  title!: string;
 
   @Prop()
-  description!: string;
+  content!: string;
+
+  @Prop()
+  type!: string;
+
+  @Prop()
+  videoUrl!: string;
+
+  // @Prop()
+  // order!: string;
+
+  @Prop({ type: Object, ref: Section.name })
+  sectionId!: Types.ObjectId;
 
   @Prop()
   createdAt!: Date;
@@ -42,4 +55,4 @@ export class Category {
   };
 }
 
-export const CategorySchema = SchemaFactory.createForClass(Category);
+export const LessonSchema = SchemaFactory.createForClass(Lesson);

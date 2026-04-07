@@ -13,6 +13,9 @@ import { S3Service } from './common/services/s3/s3.service';
 import { HlsService } from './common/services/hls/hls.service';
 import { VideoModule } from './video/video.module';
 import { UploadModule } from './upload/upload.module';
+import { CoursesModule } from './courses/courses.module';
+import { SectionsModule } from './sections/sections.module';
+import { LessonsModule } from './lessons/lessons.module';
 
 @Module({
   imports: [
@@ -36,6 +39,12 @@ import { UploadModule } from './upload/upload.module';
     VideoModule,
 
     UploadModule,
+
+    CoursesModule,
+
+    SectionsModule,
+
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [
