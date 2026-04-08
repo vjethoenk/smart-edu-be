@@ -16,6 +16,10 @@ import { UploadModule } from './upload/upload.module';
 import { CoursesModule } from './courses/courses.module';
 import { SectionsModule } from './sections/sections.module';
 import { LessonsModule } from './lessons/lessons.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
+import { QuestionsModule } from './questions/questions.module';
+import { AttemptsModule } from './attempts/attempts.module';
+import { AttemptAnswersModule } from './attempt-answers/attempt-answers.module';
 
 @Module({
   imports: [
@@ -45,6 +49,14 @@ import { LessonsModule } from './lessons/lessons.module';
     SectionsModule,
 
     LessonsModule,
+
+    QuizzesModule,
+
+    QuestionsModule,
+
+    AttemptsModule,
+
+    AttemptAnswersModule,
   ],
   controllers: [AppController],
   providers: [

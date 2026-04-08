@@ -1,25 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Section } from 'src/sections/schemas/section.schema';
 
-export type LessonDocument = HydratedDocument<Lesson>;
+export type QuestionDocument = HydratedDocument<Question>;
 
 @Schema({ timestamps: true })
-export class Lesson {
-  @Prop()
-  title!: string;
-
+export class Question {
   @Prop()
   content!: string;
 
   @Prop()
-  type!: string;
+  options!: string[];
 
-  @Prop()
-  videoUrl!: string;
+  @Prop({ required: true })
+  correctAnswer!: string;
 
-  @Prop({ type: Object, ref: Section.name })
-  sectionId!: Types.ObjectId;
+  @Prop({ enum: ['pending', 'approved'], default: 'pending' })
+  status!: string;
+
+  @Prop({ default: 1 })
+  score!: number;
 
   @Prop()
   createdAt!: Date;
@@ -52,4 +51,4 @@ export class Lesson {
   };
 }
 
-export const LessonSchema = SchemaFactory.createForClass(Lesson);
+export const QuestionSchema = SchemaFactory.createForClass(Question);

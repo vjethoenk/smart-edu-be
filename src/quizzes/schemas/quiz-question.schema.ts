@@ -1,25 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Course } from 'src/courses/schemas/course.schema';
 import { Section } from 'src/sections/schemas/section.schema';
 
-export type LessonDocument = HydratedDocument<Lesson>;
+export type QuizQuestionDocument = HydratedDocument<QuizQuestion>;
 
 @Schema({ timestamps: true })
-export class Lesson {
-  @Prop()
-  title!: string;
+export class QuizQuestion {
+  @Prop({ required: true })
+  quizId!: string;
 
   @Prop()
+  questionId!: string; // reference (optional)
+
+  @Prop({ required: true })
   content!: string;
 
-  @Prop()
-  type!: string;
+  @Prop([String])
+  options!: string[];
 
-  @Prop()
-  videoUrl!: string;
+  @Prop({ required: true })
+  correctAnswer!: string;
 
-  @Prop({ type: Object, ref: Section.name })
-  sectionId!: Types.ObjectId;
+  @Prop({ default: 1 })
+  score!: number;
 
   @Prop()
   createdAt!: Date;
@@ -52,4 +56,4 @@ export class Lesson {
   };
 }
 
-export const LessonSchema = SchemaFactory.createForClass(Lesson);
+export const QuizQuestionSchema = SchemaFactory.createForClass(QuizQuestion);
