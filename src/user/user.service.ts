@@ -109,4 +109,21 @@ export class UserService {
 
     return newUser;
   }
+
+  async findByEmail(email: string) {
+    return this.userModel.findOne({ email }).populate({
+      path: 'role',
+      select: { name: 1 },
+    });
+  }
+
+  async createGoogleUser(data: any) {
+    const getByRoleUser = await this.roleModel.findOne({ name: 'INSTRUCTOR' });
+    const userData: any = {
+      ...data,
+      role: getByRoleUser?._id.toString(),
+    };
+    const newUser = await this.userModel.create(userData);
+    return newUser;
+  }
 }

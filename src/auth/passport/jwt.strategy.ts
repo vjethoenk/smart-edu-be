@@ -21,6 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // }
 
     const { _id, name, email, role, isDeleted } = payload;
+    console.log('DATA =', payload);
     return { _id, name, email, role, isDeleted };
   }
 }

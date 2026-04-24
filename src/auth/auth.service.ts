@@ -16,14 +16,18 @@ export class AuthService {
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByUserName(username);
     if (user) {
-      const isValid = this.usersService.checkUserPassword(pass, user?.password);
+      const isValid = this.usersService.checkUserPassword(
+        pass,
+        user?.password as string,
+      );
       if (isValid === true) {
         return user;
       }
     }
     return null;
   }
-  async login(user: IUser, response: Response) {
+
+  async login(user: any, response: Response) {
     const { _id, name, email, role, isDeleted } = user;
     const payload = {
       sub: 'token login',
@@ -62,5 +66,11 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET')!,
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRE') as any,
     });
+  }
+
+  async logout(user: IUser, response: Response) {
+    await this.usersService.updateRefreshToken('', user._id);
+    response.clearCookie('refresh-token');
+    return { message: 'Logout successfully' };
   }
 }

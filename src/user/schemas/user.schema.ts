@@ -9,11 +9,17 @@ export class User {
   @Prop()
   name!: string;
 
+  @Prop()
+  googleId?: string;
+
   @Prop({ required: true })
   email!: string;
 
-  @Prop({ required: true })
-  password!: string;
+  @Prop()
+  password?: string;
+
+  @Prop()
+  avatar?: string;
 
   @Prop()
   age!: number;
