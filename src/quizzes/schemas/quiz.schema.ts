@@ -5,6 +5,17 @@ import { Section } from 'src/sections/schemas/section.schema';
 
 export type QuizDocument = HydratedDocument<Quiz>;
 
+@Schema()
+export class QuestionItem {
+  @Prop()
+  content!: string;
+
+  @Prop({ type: [String] })
+  options!: string[];
+
+  @Prop()
+  correctAnswer!: string;
+}
 @Schema({ timestamps: true })
 export class Quiz {
   @Prop()
@@ -21,6 +32,9 @@ export class Quiz {
 
   @Prop()
   totalScore!: number;
+
+  @Prop({ type: [QuestionItem] })
+  questions!: QuestionItem[];
 
   @Prop({ type: Object, ref: Course.name })
   courseId!: Types.ObjectId;

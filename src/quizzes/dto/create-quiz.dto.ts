@@ -1,9 +1,13 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
   IsNumber,
   Min,
   IsMongoId,
+  ArrayNotEmpty,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
 
 export class CreateQuizDto {
@@ -31,4 +35,19 @@ export class CreateQuizDto {
 
   @IsMongoId()
   sectionId!: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuestionItemDto)
+  questions!: QuestionItemDto[];
+}
+export class QuestionItemDto {
+  @IsString()
+  content!: string;
+
+  @IsArray()
+  options!: string[];
+
+  @IsString()
+  correctAnswer!: string;
 }

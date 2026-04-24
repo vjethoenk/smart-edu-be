@@ -31,6 +31,7 @@ export class RoleController {
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string) {
     return this.roleService.findOne(id);
   }

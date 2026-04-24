@@ -34,4 +34,7 @@ export class CreateCourseDto {
   @IsOptional()
   @IsBoolean({ message: 'isPublished phải là boolean' })
   isPublished?: boolean;
+
+  @IsString()
+  status!: string;
 }

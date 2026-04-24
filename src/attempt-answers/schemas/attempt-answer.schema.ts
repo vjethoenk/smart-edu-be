@@ -5,19 +5,19 @@ export type AttemptAnswerDocument = HydratedDocument<AttemptAnswer>;
 
 @Schema({ timestamps: true })
 export class AttemptAnswer {
-  @Prop()
-  attemptId!: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  attemptId!: Types.ObjectId;
 
-  @Prop()
-  questionId!: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  questionId!: Types.ObjectId;
 
-  @Prop()
+  @Prop({ required: true })
   selectedAnswer!: string;
 
   @Prop({ default: false })
   isCorrect!: boolean;
 
-  @Prop()
+  @Prop({ default: 0 })
   score!: number;
 }
 

@@ -24,6 +24,7 @@ export class UserController {
   }
 
   @Get()
+  @ResponseMessage('Hiển thị danh sách thành công')
   findAll() {
     return this.userService.findAll();
   }

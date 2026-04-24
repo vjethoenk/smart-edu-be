@@ -14,7 +14,7 @@ export class Question {
   @Prop({ required: true })
   correctAnswer!: string;
 
-  @Prop({ enum: ['pending', 'approved'], default: 'pending' })
+  @Prop({ enum: ['pending', 'approved', 'inReview'], default: 'pending' })
   status!: string;
 
   @Prop({ default: 1 })
@@ -25,6 +25,9 @@ export class Question {
 
   @Prop()
   updateAt!: Date;
+
+  @Prop()
+  approvedAt!: Date;
 
   @Prop({ default: false })
   isDeleted!: boolean;

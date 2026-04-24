@@ -1,6 +1,7 @@
 import {
-  IsString,
   IsNotEmpty,
+  IsMongoId,
+  IsString,
   IsArray,
   ArrayMinSize,
   IsNumber,
@@ -8,7 +9,15 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateQuestionDto {
+export class CreateQuizQuestionDto {
+  @IsMongoId()
+  @IsNotEmpty()
+  quizId!: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  questionId!: string;
+
   @IsString()
   @IsNotEmpty()
   content!: string;

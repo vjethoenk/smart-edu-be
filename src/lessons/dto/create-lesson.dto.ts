@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateLessonDto {
   @IsNotEmpty({ message: 'Title không được để trống' })
@@ -10,7 +10,7 @@ export class CreateLessonDto {
   @IsNotEmpty({ message: 'Content không được để trống' })
   content!: string;
 
-  @IsNotEmpty({ message: 'Video URL không được để trống' })
+  @IsOptional()
   videoUrl!: string;
 
   // @IsNotEmpty({ message: 'Order không được để trống' })
@@ -18,4 +18,10 @@ export class CreateLessonDto {
 
   @IsNotEmpty({ message: 'Section ID không được để trống' })
   sectionId!: string;
+
+  @IsNotEmpty({ message: 'Course ID không được để trống' })
+  courseId!: string;
+
+  @IsOptional()
+  quizId!: string;
 }

@@ -5,17 +5,17 @@ export type AttemptDocument = HydratedDocument<Attempt>;
 
 @Schema({ timestamps: true })
 export class Attempt {
-  @Prop()
-  userId!: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  userId!: Types.ObjectId;
 
-  @Prop()
-  quizId!: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  quizId!: Types.ObjectId;
 
-  @Prop()
+  @Prop({ default: () => new Date() })
   startTime!: Date;
 
-  @Prop()
-  endTime!: Date;
+  @Prop({ required: false })
+  endTime?: Date;
 
   @Prop({ default: 0 })
   score!: number;

@@ -1,7 +1,7 @@
 import { IsMongoId, IsNotEmpty } from 'class-validator';
 
-export class CreateAttemptDto {
+export class SubmitAttemptDto {
   @IsMongoId()
   @IsNotEmpty()
-  quizId!: string;
+  attemptId!: string;
 }

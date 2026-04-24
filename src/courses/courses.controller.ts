@@ -50,4 +50,14 @@ export class CoursesController {
   remove(@Param('id') id: string) {
     return this.coursesService.remove(id);
   }
+
+  @Put('approval/:id')
+  @ResponseMessage('Thay đổi phê duyệt thành công!')
+  approvals(
+    @Param('id') id: string,
+    @Body('status') status: string,
+    @User() user: IUser,
+  ) {
+    return this.coursesService.updateApproval(id, status, user);
+  }
 }

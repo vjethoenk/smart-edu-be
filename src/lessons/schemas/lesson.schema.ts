@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { Course } from 'src/courses/schemas/course.schema';
 import { Section } from 'src/sections/schemas/section.schema';
 
 export type LessonDocument = HydratedDocument<Lesson>;
@@ -21,11 +22,17 @@ export class Lesson {
   @Prop({ type: Object, ref: Section.name })
   sectionId!: Types.ObjectId;
 
+  @Prop({ type: Object, ref: Course.name })
+  courseId!: Types.ObjectId;
+
   @Prop()
   createdAt!: Date;
 
   @Prop()
   updateAt!: Date;
+
+  @Prop()
+  quizId!: string;
 
   @Prop({ default: false })
   isDeleted!: boolean;

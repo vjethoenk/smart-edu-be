@@ -22,6 +22,9 @@ export class Course {
   @Prop()
   level!: string;
 
+  @Prop({ enum: ['pending', 'approved', 'inReview'], default: 'pending' })
+  status!: string;
+
   @Prop({ type: Object, ref: Category.name })
   categoryId!: Types.ObjectId;
 
@@ -39,6 +42,9 @@ export class Course {
 
   @Prop({ default: null })
   deletedAt?: Date;
+
+  @Prop()
+  approvedAt?: Date;
 
   @Prop({ type: Object })
   createBy!: {

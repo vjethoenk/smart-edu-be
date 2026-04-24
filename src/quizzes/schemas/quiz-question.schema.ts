@@ -1,17 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Course } from 'src/courses/schemas/course.schema';
-import { Section } from 'src/sections/schemas/section.schema';
 
 export type QuizQuestionDocument = HydratedDocument<QuizQuestion>;
 
 @Schema({ timestamps: true })
 export class QuizQuestion {
-  @Prop({ required: true })
-  quizId!: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  quizId!: Types.ObjectId;
 
-  @Prop()
-  questionId!: string; // reference (optional)
+  @Prop({ type: Types.ObjectId })
+  questionId?: Types.ObjectId;
 
   @Prop({ required: true })
   content!: string;
