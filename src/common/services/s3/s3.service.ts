@@ -59,4 +59,31 @@ export class S3Service {
 
     return `https://${bucketName}.s3.${region}.amazonaws.com/${fileName}`;
   }
+
+  async uploadPdf(file: Express.Multer.File): Promise<string> {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    const region = process.env.AWS_REGION || 'ap-southeast-2';
+
+    if (!bucketName) {
+      throw new Error('Cấu hình AWS_S3_BUCKET_NAME bị thiếu trong file .env');
+    }
+
+    const allowedTypes = ['application/pdf'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      throw new BadRequestException('Chỉ cho phép upload file PDF');
+    }
+
+    const fileName = `pdf/${Date.now()}-${uuid()}-${file.originalname}`;
+
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }),
+    );
+
+    return `https://${bucketName}.s3.${region}.amazonaws.com/${fileName}`;
+  }
 }

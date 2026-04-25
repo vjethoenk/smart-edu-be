@@ -24,4 +24,16 @@ export class UploadController {
     const url = await this.s3Service.uploadImage(file);
     return { url };
   }
+
+  @Post('pdf')
+  @Public()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  async uploadPdf(@UploadedFile() file: Express.Multer.File) {
+    const url = await this.s3Service.uploadPdf(file);
+    return { url };
+  }
 }
