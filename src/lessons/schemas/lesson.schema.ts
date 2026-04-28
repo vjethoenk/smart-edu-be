@@ -19,6 +19,9 @@ export class Lesson {
   @Prop()
   videoUrl!: string;
 
+  @Prop()
+  pdfUrl!: string;
+
   @Prop({ type: Object, ref: Section.name })
   sectionId!: Types.ObjectId;
 

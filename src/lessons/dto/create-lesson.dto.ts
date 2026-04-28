@@ -24,4 +24,7 @@ export class CreateLessonDto {
 
   @IsOptional()
   quizId!: string;
+
+  @IsOptional()
+  pdfUrl!: string;
 }
