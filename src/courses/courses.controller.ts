@@ -25,6 +25,7 @@ export class CoursesController {
   }
 
   @Get()
+  @Public()
   @ResponseMessage('Hiển thị danh sách khóa học thành công!')
   findAll() {
     return this.coursesService.findAll();
