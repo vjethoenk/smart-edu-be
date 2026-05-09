@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Public, ResponseMessage, User } from 'src/decorator/customize';
@@ -28,5 +28,14 @@ export class PaymentsController {
   @ResponseMessage('Lấy trạng thái thanh toán thành công!')
   getPayment(@Param('id') id: string) {
     return this.paymentsService.findOne(id);
+  }
+  @Put('cancel/:orderCode')
+  cancel(@Param('orderCode') orderCode: number) {
+    return this.paymentsService.cancelPayment(Number(orderCode));
+  }
+
+  @Get('status/:orderCode')
+  getStatus(@Param('orderCode') orderCode: string) {
+    return this.paymentsService.getPaymentStatus(Number(orderCode));
   }
 }

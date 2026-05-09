@@ -21,6 +21,7 @@ import { QuestionsModule } from './questions/questions.module';
 import { AttemptsModule } from './attempts/attempts.module';
 import { AttemptAnswersModule } from './attempt-answers/attempt-answers.module';
 import { PaymentsModule } from './payments/payments.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
 
 @Module({
   imports: [
@@ -60,6 +61,8 @@ import { PaymentsModule } from './payments/payments.module';
     AttemptAnswersModule,
 
     PaymentsModule,
+
+    EnrollmentsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -8,8 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment, PaymentDocument } from './schemas/payment.schema';
-import { createHmac } from 'crypto';
 import { PayOS } from '@payos/node';
+import {
+  Enrollment,
+  EnrollmentDocument,
+} from '../enrollments/schemas/enrollment.schema';
 
 @Injectable()
 export class PaymentsService {
@@ -17,6 +20,8 @@ export class PaymentsService {
 
   constructor(
     @InjectModel(Payment.name) private paymentModel: Model<PaymentDocument>,
+    @InjectModel(Enrollment.name)
+    private enrollmentModel: Model<EnrollmentDocument>,
     private configService: ConfigService,
   ) {
     const clientId = this.configService.get<string>('PAYOS_CLIENT_ID');
@@ -43,7 +48,6 @@ export class PaymentsService {
       orderInfo = 'Thanh toán khóa học',
     } = createPaymentDto;
 
-    // Tạo orderCode duy nhất (PayOS yêu cầu number)
     const orderCode = Date.now();
 
     const paymentData = {
@@ -77,15 +81,12 @@ export class PaymentsService {
       });
 
       return {
-        message: 'Đã tạo thanh toán PayOS thành công.',
-        data: {
-          paymentId: payment._id,
-          orderCode: payment.orderCode,
-          amount: payment.amount,
-          status: payment.status,
-          checkoutUrl: payment.checkoutUrl,
-          qrCode: paymentLinkResponse.qrCode,
-        },
+        paymentId: payment._id,
+        orderCode: payment.orderCode,
+        amount: payment.amount,
+        status: payment.status,
+        checkoutUrl: payment.checkoutUrl,
+        qrCode: paymentLinkResponse.qrCode,
       };
     } catch (error: any) {
       throw new BadRequestException(
@@ -94,8 +95,8 @@ export class PaymentsService {
     }
   }
 
-  async findOne(id: string) {
-    const payment = await this.paymentModel.findById(id).exec();
+  async findOne(_id: string) {
+    const payment = await this.paymentModel.findById(_id).exec();
     if (!payment) {
       throw new NotFoundException('Không tìm thấy đơn thanh toán');
     }
@@ -103,67 +104,103 @@ export class PaymentsService {
   }
 
   async handleWebhook(webhookData: any) {
-    // Verify checksum
-    const {
-      orderCode,
-      amount,
-      description,
-      accountNumber,
-      reference,
-      transactionDateTime,
-      paymentLinkId,
-      code,
-      desc,
-      counterAccountBankId,
-      counterAccountBankName,
-      counterAccountName,
-      counterAccountNumber,
-      virtualAccountName,
-      virtualAccountNumber,
-    } = webhookData;
+    console.log('FULL WEBHOOK:', JSON.stringify(webhookData, null, 2));
 
-    const data = `${orderCode}|${amount}|${description}|${accountNumber}|${reference}|${transactionDateTime}|${paymentLinkId}|${code}|${desc}|${counterAccountBankId}|${counterAccountBankName}|${counterAccountName}|${counterAccountNumber}|${virtualAccountName}|${virtualAccountNumber}`;
-    const checksum = createHmac(
-      'sha256',
-      this.configService.get<string>('PAYOS_CHECKSUM_KEY')!,
-    )
-      .update(data)
-      .digest('hex');
-
-    if (checksum !== webhookData.checksum) {
-      throw new BadRequestException('Checksum không hợp lệ');
+    let payload: any;
+    try {
+      payload = await this.payOS.webhooks.verify(webhookData);
+      console.log('PAYOS WEBHOOK VERIFIED:', JSON.stringify(payload, null, 2));
+    } catch (error: any) {
+      console.error('PAYOS WEBHOOK VERIFY FAILED:', error?.message || error);
+      return { message: 'Invalid signature' };
     }
 
-    // Tìm payment theo orderCode
-    const payment = await this.paymentModel.findOne({ orderCode }).exec();
+    const payment = await this.paymentModel.findOne({
+      orderCode: payload.orderCode,
+    });
+
     if (!payment) {
-      throw new NotFoundException(
-        'Không tìm thấy đơn thanh toán với orderCode: ' + orderCode,
-      );
+      console.error('PAYMENT NOT FOUND');
+      return { message: 'Payment not found' };
     }
 
-    // Cập nhật status
-    if (code === '00') {
+    if (payment.status === 'SUCCESS') {
+      return { message: 'Already processed' };
+    }
+
+    if (payment.status === 'CANCELLED') {
+      return { message: 'Đã bị hủy trước đó' };
+    }
+
+    if (payload.code === '00') {
       payment.status = 'SUCCESS';
-      payment.transactionId = reference;
+      payment.transactionId = payload.reference;
       payment.confirmedAt = new Date();
+
+      await this.enrollmentModel.create({
+        userId: payment.user._id,
+        courseId: payment.courseId,
+        paymentId: payment._id,
+        status: 'ACTIVE',
+        enrolledAt: new Date(),
+      });
     } else {
       payment.status = 'FAILED';
     }
 
     await payment.save();
 
+    console.log('PAYMENT UPDATED:', payment.status);
+
+    return { message: 'OK' };
+  }
+
+  async cancelPayment(orderCode: number) {
+    const payment = await this.paymentModel.findOne({ orderCode });
+
+    if (!payment) {
+      throw new NotFoundException('Không tìm thấy đơn thanh toán');
+    }
+
+    if (payment.status === 'SUCCESS') {
+      throw new BadRequestException('Đơn đã thanh toán, không thể hủy');
+    }
+
+    try {
+      await this.payOS.paymentRequests.cancel(orderCode);
+    } catch (error: any) {
+      console.error('Cancel PayOS error:', error?.message);
+    }
+
+    payment.status = 'CANCELLED';
+    await payment.save();
+
     return {
-      message:
-        payment.status === 'SUCCESS'
-          ? 'Thanh toán thành công'
-          : 'Thanh toán thất bại',
+      message: 'Đã hủy giao dịch',
       data: {
-        paymentId: payment._id,
-        orderCode: payment.orderCode,
+        orderCode,
         status: payment.status,
-        transactionId: payment.transactionId,
       },
     };
+  }
+
+  async getPaymentStatus(orderCode: number) {
+    let payment = await this.paymentModel.findOne({ orderCode });
+
+    if (!payment) throw new NotFoundException('Không tìm thấy đơn hàng');
+
+    if (payment.status === 'PENDING') {
+      try {
+        const payosOrder = await this.payOS.getPaymentInstruction(orderCode);
+        if (payosOrder.status === 'PAID') {
+          payment.status = 'SUCCESS';
+          await payment.save();
+        }
+      } catch (error) {
+        console.error('Lỗi khi check trạng thái PayOS:', error);
+      }
+    }
+
+    return { status: payment.status };
   }
 }
