@@ -50,4 +50,7 @@ export class QuestionItemDto {
 
   @IsString()
   correctAnswer!: string;
+
+  @IsString()
+  _id?: string;
 }

@@ -170,12 +170,12 @@ export class QuizzesService {
    * Dùng cho HỌC SINH làm bài
    */
   async getQuestions(quizId: string) {
-    const questions = await this.quizQuestionModel
+    const questions = await this.quizModel
       .find({
-        quizId: new Types.ObjectId(quizId),
+        _id: new Types.ObjectId(quizId),
         isDeleted: false,
       })
-      .select('-correctAnswer') // Ẩn đáp án đúng khỏi học sinh
+      .select('-questions.correctAnswer')
       .exec();
 
     return questions;
@@ -186,9 +186,9 @@ export class QuizzesService {
    * Dùng để chấm bài
    */
   async getQuestionsWithAnswers(quizId: string) {
-    const questions = await this.quizQuestionModel
-      .find({
-        quizId: new Types.ObjectId(quizId),
+    const questions = await this.quizModel
+      .findOne({
+        _id: new Types.ObjectId(quizId),
         isDeleted: false,
       })
       .exec();

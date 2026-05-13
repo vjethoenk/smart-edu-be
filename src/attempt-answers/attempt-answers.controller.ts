@@ -40,37 +40,7 @@ export class AttemptAnswersController {
       answers: Array<{ questionId: string; selectedAnswer: string }>;
     },
     @User() user: IUser,
-  ) {
-    // Lấy tất cả câu hỏi trong quiz (với đáp án đúng)
-    const quizQuestions = await this.quizzesService.getQuestionsWithAnswers(
-      body.quizId,
-    );
-
-    // Map các câu hỏi thành object để dễ lookup
-    const questionsMap = new Map(
-      quizQuestions.map((q: any) => [
-        q._id.toString(),
-        { correctAnswer: q.correctAnswer, score: q.score },
-      ]),
-    );
-
-    // Transform answers để có correctAnswer
-    const answersWithCorrect = body.answers.map((answer) => {
-      const question = quizQuestions.find(
-        (q: any) => q._id.toString() === answer.questionId,
-      );
-      return {
-        ...answer,
-        correctAnswer: question?.correctAnswer || '',
-      };
-    });
-
-    // Lưu tất cả
-    return await this.attemptAnswersService.createBatch(
-      body.attemptId,
-      answersWithCorrect,
-    );
-  }
+  ) {}
 
   /**
    * 📝 HỌC SINH LƯU 1 CÂU TRẢ LỜI (REAL-TIME)

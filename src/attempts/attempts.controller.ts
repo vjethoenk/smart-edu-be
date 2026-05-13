@@ -8,6 +8,8 @@ import {
   Query,
   UseGuards,
   Inject,
+  Put,
+  NotFoundException,
 } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 import { CreateAttemptDto } from './dto/create-attempt.dto';
@@ -85,20 +87,29 @@ export class AttemptsController {
     @Param('attemptId') attemptId: string,
     @Body() body: { questionId: string; selectedAnswer: string },
   ) {
-    // Validate attempt exists
-    if (!(await this.attemptsService.attemptExists(attemptId))) {
-      throw new Error('Lần làm bài không tồn tại');
+    const attempt = await this.attemptsService.findOne(attemptId);
+
+    const quizQuestions = await this.quizzesService.getQuestionsWithAnswers(
+      attempt.quizId.toString(),
+    );
+
+    const question = quizQuestions?.questions.find(
+      (q: any) =>
+        q._id?.toString() === body.questionId ||
+        q.questionId?.toString() === body.questionId,
+    );
+
+    if (!question) {
+      throw new NotFoundException('Không tìm thấy câu hỏi trong quiz');
     }
 
-    // TODO: Get correctAnswer từ QuizQuestion để kiểm tra
-    // Tạm thời: chỉ lưu, không check
     const answer = await this.attemptAnswersService.create(
       {
         attemptId,
         questionId: body.questionId,
         selectedAnswer: body.selectedAnswer,
       } as any,
-      '', // correctAnswer sẽ được fetch từ DB
+      question.correctAnswer,
     );
 
     return answer;
@@ -106,10 +117,10 @@ export class AttemptsController {
 
   /**
    * ✅ HỌC SINH NỘP BÀI QUIZ
-   * PATCH /attempts/:attemptId/submit
+   * PUT /attempts/:attemptId/submit
    * Returns: score, passStatus, results
    */
-  @Patch(':attemptId/submit')
+  @Put(':attemptId/submit')
   @ResponseMessage('Nộp bài quiz thành công!')
   async submit(@Param('attemptId') attemptId: string, @User() user: IUser) {
     // Lấy Attempt
@@ -150,7 +161,7 @@ export class AttemptsController {
       incorrectCount: gradeResult.incorrectCount,
       passScore: quiz.passScore,
       isPassed,
-      status: 'HOÀN THÀNH',
+      status: 'submitted',
       message: isPassed
         ? `Chúc mừng! Bạn đã đạt được ${gradeResult.totalScore}/${quiz.totalScore} điểm`
         : `Bạn cần đạt ${quiz.passScore} điểm, nhưng bạn chỉ có ${gradeResult.totalScore} điểm`,
