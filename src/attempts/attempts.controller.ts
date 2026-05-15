@@ -9,7 +9,6 @@ import {
   UseGuards,
   Inject,
   Put,
-  NotFoundException,
 } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 import { CreateAttemptDto } from './dto/create-attempt.dto';
@@ -87,29 +86,20 @@ export class AttemptsController {
     @Param('attemptId') attemptId: string,
     @Body() body: { questionId: string; selectedAnswer: string },
   ) {
-    const attempt = await this.attemptsService.findOne(attemptId);
-
-    const quizQuestions = await this.quizzesService.getQuestionsWithAnswers(
-      attempt.quizId.toString(),
-    );
-
-    const question = quizQuestions?.questions.find(
-      (q: any) =>
-        q._id?.toString() === body.questionId ||
-        q.questionId?.toString() === body.questionId,
-    );
-
-    if (!question) {
-      throw new NotFoundException('Không tìm thấy câu hỏi trong quiz');
+    // Validate attempt exists
+    if (!(await this.attemptsService.attemptExists(attemptId))) {
+      throw new Error('Lần làm bài không tồn tại');
     }
 
+    // TODO: Get correctAnswer từ QuizQuestion để kiểm tra
+    // Tạm thời: chỉ lưu, không check
     const answer = await this.attemptAnswersService.create(
       {
         attemptId,
         questionId: body.questionId,
         selectedAnswer: body.selectedAnswer,
       } as any,
-      question.correctAnswer,
+      '', // correctAnswer sẽ được fetch từ DB
     );
 
     return answer;

@@ -1,4 +1,37 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  ValidateNested,
+  IsObject,
+  Min,
+} from 'class-validator';
+
+export class CompletionConditionsDto {
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  duration?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minWatchPercent?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  requiredReadingTime?: number;
+}
 
 export class CreateLessonDto {
   @IsNotEmpty({ message: 'Title không được để trống' })
@@ -11,10 +44,8 @@ export class CreateLessonDto {
   content!: string;
 
   @IsOptional()
-  videoUrl!: string;
-
-  // @IsNotEmpty({ message: 'Order không được để trống' })
-  // order!: string;
+  @IsString()
+  videoUrl?: string;
 
   @IsNotEmpty({ message: 'Section ID không được để trống' })
   sectionId!: string;
@@ -23,8 +54,15 @@ export class CreateLessonDto {
   courseId!: string;
 
   @IsOptional()
-  quizId!: string;
+  @IsString()
+  quizId?: string;
 
   @IsOptional()
-  pdfUrl!: string;
+  @IsString()
+  pdfUrl?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CompletionConditionsDto)
+  completionConditions?: CompletionConditionsDto;
 }

@@ -4,9 +4,28 @@ import { Course } from 'src/courses/schemas/course.schema';
 import { Section } from 'src/sections/schemas/section.schema';
 
 export type LessonDocument = HydratedDocument<Lesson>;
+@Schema({ _id: false })
+export class CompletionConditions {
+  @Prop()
+  type!: string;
 
+  @Prop()
+  duration!: number;
+
+  @Prop({ default: 80 })
+  minWatchPercent?: number;
+
+  @Prop()
+  requiredReadingTime?: number;
+}
+
+export const CompletionConditionsSchema =
+  SchemaFactory.createForClass(CompletionConditions);
 @Schema({ timestamps: true })
 export class Lesson {
+  @Prop()
+  status!: string;
+
   @Prop()
   title!: string;
 
@@ -18,6 +37,9 @@ export class Lesson {
 
   @Prop()
   videoUrl!: string;
+
+  @Prop()
+  completionConditions!: CompletionConditions;
 
   @Prop()
   pdfUrl!: string;
