@@ -52,6 +52,12 @@ export class CoursesController {
     return this.coursesService.remove(id);
   }
 
+  @Get(':id/monitoring')
+  @ResponseMessage('Lấy dữ liệu giám sát khóa học thành công!')
+  monitoring(@Param('id') id: string, @User() user: IUser) {
+    return this.coursesService.monitoring(id, user);
+  }
+
   @Put('approval/:id')
   @ResponseMessage('Thay đổi phê duyệt thành công!')
   approvals(

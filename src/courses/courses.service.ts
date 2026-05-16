@@ -11,7 +11,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Course, CourseDocument } from './schemas/course.schema';
 import { Section, SectionDocument } from 'src/sections/schemas/section.schema';
 import { Lesson, LessonDocument } from 'src/lessons/schemas/lesson.schema';
-import { Model } from 'mongoose';
+import {
+  Enrollment,
+  EnrollmentDocument,
+} from 'src/enrollments/schemas/enrollment.schema';
+import {
+  CourseProgress,
+  CourseProgressDocument,
+} from 'src/tracking/schemas/course-progress.schema';
+import { Model, Types } from 'mongoose';
+import type {
+  ICourseMonitoring,
+  ICourseMonitoringStudent,
+} from './interfaces/course-monitoring.interface';
 
 @Injectable()
 export class CoursesService {
@@ -19,6 +31,10 @@ export class CoursesService {
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     @InjectModel(Section.name) private sectionModel: Model<SectionDocument>,
     @InjectModel(Lesson.name) private lessonModel: Model<LessonDocument>,
+    @InjectModel(Enrollment.name)
+    private enrollmentModel: Model<EnrollmentDocument>,
+    @InjectModel(CourseProgress.name)
+    private courseProgressModel: Model<CourseProgressDocument>,
   ) {}
   async create(createCourseDto: CreateCourseDto, user: IUser) {
     const newCourse = await this.courseModel.create({
@@ -123,6 +139,90 @@ export class CoursesService {
     return {
       message: 'Cập nhật trạng thái thành công',
       data: course,
+    };
+  }
+
+  async monitoring(id: string, user: IUser): Promise<ICourseMonitoring> {
+    const course = await this.courseModel.findById(id).exec();
+    if (!course) {
+      throw new NotFoundException('Không tìm thấy khóa học');
+    }
+
+    const courseCreatorId = course.createBy?._id?.toString?.();
+    if (user.role.name !== 'ADMIN' && courseCreatorId !== user._id) {
+      throw new ForbiddenException(
+        'Bạn không có quyền xem báo cáo khóa học này',
+      );
+    }
+
+    const enrollments = await this.enrollmentModel
+      .find({ courseId: id, status: 'ACTIVE' })
+      .select('userId')
+      .lean()
+      .exec();
+
+    const enrolledCount = enrollments.length;
+    const enrolledUserIds = enrollments.map(
+      (item) => new Types.ObjectId(item.userId.toString()),
+    );
+    console.log('enrolledUserIds', enrolledUserIds);
+    console.log('rIds', id);
+
+    const [totalLessons, progressRecords] = await Promise.all([
+      this.lessonModel.countDocuments({ courseId: id }).exec(),
+      this.courseProgressModel
+        .find({
+          courseId: id,
+          userId: { $in: enrolledUserIds },
+        })
+        .populate({ path: 'userId', select: 'name email' })
+        .lean()
+        .exec(),
+    ]);
+
+    console.log('progressRecords', progressRecords);
+
+    const completedStudents = progressRecords.filter(
+      (record) => record.progressPercent === 100,
+    ).length;
+
+    const totalProgress = progressRecords.reduce(
+      (sum, record) => sum + (record.progressPercent || 0),
+      0,
+    );
+
+    const completionRate = enrolledCount
+      ? Math.round((completedStudents / enrolledCount) * 100 * 100) / 100
+      : 0;
+    const averageProgress = enrolledCount
+      ? Math.round((totalProgress / enrolledCount) * 100) / 100
+      : 0;
+
+    const topStudents = progressRecords
+      .sort((a, b) => (b.progressPercent || 0) - (a.progressPercent || 0))
+      .slice(0, 10)
+      .map((record) => {
+        const userRef = record.userId as any;
+        return {
+          userId:
+            userRef?._id?.toString?.() ??
+            (typeof userRef === 'string' ? userRef : ''),
+          name: userRef?.name ?? '',
+          email: userRef?.email,
+          completedLessons: record.completedLessons || 0,
+          totalLessons: record.totalLessons || totalLessons,
+          progressPercent: record.progressPercent || 0,
+        } as ICourseMonitoringStudent;
+      });
+
+    return {
+      courseId: id,
+      enrolledCount,
+      completedStudents,
+      completionRate,
+      averageProgress,
+      totalLessons,
+      topStudents: topStudents.length ? topStudents : undefined,
     };
   }
 

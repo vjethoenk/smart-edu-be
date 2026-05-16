@@ -10,6 +10,14 @@ import {
 } from 'src/categories/schemas/category.schema';
 import { Section, SectionSchema } from 'src/sections/schemas/section.schema';
 import { Lesson, LessonSchema } from 'src/lessons/schemas/lesson.schema';
+import {
+  Enrollment,
+  EnrollmentSchema,
+} from 'src/enrollments/schemas/enrollment.schema';
+import {
+  CourseProgress,
+  CourseProgressSchema,
+} from 'src/tracking/schemas/course-progress.schema';
 
 @Module({
   imports: [
@@ -18,6 +26,8 @@ import { Lesson, LessonSchema } from 'src/lessons/schemas/lesson.schema';
       { name: Category.name, schema: CategorySchema },
       { name: Section.name, schema: SectionSchema },
       { name: Lesson.name, schema: LessonSchema },
+      { name: Enrollment.name, schema: EnrollmentSchema },
+      { name: CourseProgress.name, schema: CourseProgressSchema },
     ]),
   ],
   controllers: [CoursesController],
