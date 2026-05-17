@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as mammoth from 'mammoth';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -203,5 +204,187 @@ export class QuestionsService {
       message: 'Cập nhật trạng thái câu hỏi thành công',
       data: question,
     };
+  }
+
+  /**
+   * Parse câu hỏi từ nội dung text của file Word
+   */
+  private parseQuestions(text: string) {
+    let parseStartIndex = 0;
+    const startMarker = /Bắt\s+Đầu\s+Nhập\s+Câu\s+Hỏi/i;
+    const markerMatch = text.match(startMarker);
+    if (markerMatch && typeof markerMatch.index === 'number') {
+      parseStartIndex = markerMatch.index + markerMatch[0].length;
+    }
+
+    const textToParse = text.slice(parseStartIndex);
+    const lines = textToParse.split('\n');
+    const questions: any[] = [];
+    let currentQuestion: any = null;
+    let currentOptionsMap: Record<string, string> = {};
+    let correctAnswerLetter = '';
+
+    const questionRegex = /^(?:Câu|Question)\s+(\d+)\s*:\s*(.*)$/i;
+    const optionRegex = /^([A-D])\.\s*(.*)$/i;
+    const answerRegex = /^(?:Đáp án|Answer|Correct\s+answer)\s*:\s*([A-D])$/i;
+    const scoreRegex = /^(?:Điểm|Score)\s*:\s*(\d+(?:\.\d+)?)$/i;
+
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+
+      const questionMatch = line.match(questionRegex);
+      if (questionMatch) {
+        if (currentQuestion) {
+          if (correctAnswerLetter && currentOptionsMap[correctAnswerLetter]) {
+            currentQuestion.correctAnswer = currentOptionsMap[correctAnswerLetter];
+          }
+          questions.push(currentQuestion);
+        }
+
+        const qIndex = parseInt(questionMatch[1]);
+        const qContent = questionMatch[2].trim();
+
+        currentQuestion = {
+          importIndex: qIndex,
+          content: qContent,
+          options: [],
+          correctAnswer: '',
+          score: 1,
+        };
+        currentOptionsMap = {};
+        correctAnswerLetter = '';
+        continue;
+      }
+
+      if (currentQuestion) {
+        const optionMatch = line.match(optionRegex);
+        if (optionMatch) {
+          const letter = optionMatch[1].toUpperCase();
+          const optionText = optionMatch[2].trim();
+          currentOptionsMap[letter] = optionText;
+          currentQuestion.options.push(optionText);
+          continue;
+        }
+
+        const answerMatch = line.match(answerRegex);
+        if (answerMatch) {
+          correctAnswerLetter = answerMatch[1].toUpperCase();
+          continue;
+        }
+
+        const scoreMatch = line.match(scoreRegex);
+        if (scoreMatch) {
+          currentQuestion.score = parseFloat(scoreMatch[1]);
+          continue;
+        }
+
+        // Nếu đang trong block câu hỏi nhưng chưa có options hay đáp án, có thể là câu hỏi nhiều dòng
+        if (currentQuestion.options.length === 0 && !correctAnswerLetter) {
+          currentQuestion.content += '\n' + line;
+        }
+      }
+    }
+
+    if (currentQuestion) {
+      if (correctAnswerLetter && currentOptionsMap[correctAnswerLetter]) {
+        currentQuestion.correctAnswer = currentOptionsMap[correctAnswerLetter];
+      }
+      questions.push(currentQuestion);
+    }
+
+    return questions;
+  }
+
+  /**
+   * Import danh sách câu hỏi từ file Word (.docx)
+   */
+  async importQuestions(file: Express.Multer.File, user: IUser) {
+    if (!file) {
+      throw new BadRequestException('Vui lòng tải lên file Word (.docx)');
+    }
+
+    const isDocx =
+      file.originalname.toLowerCase().endsWith('.docx') ||
+      file.mimetype ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+    if (!isDocx) {
+      throw new BadRequestException(
+        'Định dạng file không hợp lệ. Chỉ chấp nhận file Word (.docx)',
+      );
+    }
+
+    try {
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      const text = result.value;
+
+      const parsedQuestions = this.parseQuestions(text);
+      if (parsedQuestions.length === 0) {
+        throw new BadRequestException(
+          'Không tìm thấy câu hỏi hợp lệ nào trong file Word.',
+        );
+      }
+
+      const errors: string[] = [];
+      const validatedQuestions: any[] = [];
+
+      for (const q of parsedQuestions) {
+        const qLabel = `Câu ${q.importIndex}`;
+
+        if (!q.content || !q.content.trim()) {
+          errors.push(`${qLabel}: Nội dung câu hỏi không được để trống.`);
+          continue;
+        }
+
+        if (q.options.length < 2 || q.options.length > 4) {
+          errors.push(
+            `${qLabel}: Số lượng lựa chọn phải từ 2 đến 4 (hiện có ${q.options.length} lựa chọn).`,
+          );
+          continue;
+        }
+
+        if (!q.correctAnswer) {
+          errors.push(
+            `${qLabel}: Thiếu đáp án đúng hoặc đáp án đúng không khớp với bất kỳ lựa chọn A, B, C, D nào.`,
+          );
+          continue;
+        }
+
+        validatedQuestions.push({
+          content: q.content,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          score: q.score || 1,
+          status: 'pending',
+          createBy: {
+            _id: new Types.ObjectId(user._id),
+            email: user.email,
+          },
+        });
+      }
+
+      if (errors.length > 0) {
+        throw new BadRequestException({
+          message: 'File Word chứa dữ liệu không hợp lệ',
+          errors,
+        });
+      }
+
+      const saved = await this.questionModel.insertMany(validatedQuestions);
+
+      return {
+        message: `Import thành công ${saved.length} câu hỏi!`,
+        count: saved.length,
+        data: saved,
+      };
+    } catch (err) {
+      if (err instanceof BadRequestException) {
+        throw err;
+      }
+      throw new BadRequestException(
+        'Có lỗi xảy ra trong quá trình parse file Word: ' + err.message,
+      );
+    }
   }
 }

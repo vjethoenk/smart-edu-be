@@ -9,7 +9,10 @@ import {
   Query,
   UseGuards,
   Put,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
@@ -33,6 +36,20 @@ export class QuestionsController {
   @ResponseMessage('Tạo câu hỏi thành công!')
   create(@Body() createQuestionDto: CreateQuestionDto, @User() user: IUser) {
     return this.questionsService.create(createQuestionDto, user);
+  }
+
+  @Post('import')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 }, 
+    }),
+  )
+  @ResponseMessage('Import danh sách câu hỏi thành công!')
+  importQuestions(
+    @UploadedFile() file: Express.Multer.File,
+    @User() user: IUser,
+  ) {
+    return this.questionsService.importQuestions(file, user);
   }
 
   /**
