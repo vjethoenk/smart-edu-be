@@ -23,6 +23,8 @@ import { AttemptAnswersModule } from './attempt-answers/attempt-answers.module';
 import { PaymentsModule } from './payments/payments.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { TrackingModule } from './tracking/tracking.module';
+import { CartModule } from './cart/cart.module';
+import { PromotionsModule } from './promotions/promotions.module';
 
 @Module({
   imports: [
@@ -66,6 +68,10 @@ import { TrackingModule } from './tracking/tracking.module';
     EnrollmentsModule,
 
     TrackingModule,
+
+    CartModule,
+
+    PromotionsModule,
   ],
   controllers: [AppController],
   providers: [

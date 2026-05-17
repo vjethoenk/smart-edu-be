@@ -31,6 +31,20 @@ export class CoursesController {
     return this.coursesService.findAll();
   }
 
+  @Get('stats/purchase')
+  @Public()
+  @ResponseMessage('Lấy thống kê mua hàng thành công!')
+  getPurchaseStats() {
+    return this.coursesService.getPurchaseStats();
+  }
+
+  @Get('stats/total-students')
+  @Public()
+  @ResponseMessage('Lấy tổng số học sinh đã mua thành công!')
+  getTotalStudentsPurchased() {
+    return this.coursesService.getTotalStudentsPurchased();
+  }
+
   @Get(':id')
   @Public()
   findOne(@Param('id') id: string) {
@@ -56,6 +70,13 @@ export class CoursesController {
   @ResponseMessage('Lấy dữ liệu giám sát khóa học thành công!')
   monitoring(@Param('id') id: string, @User() user: IUser) {
     return this.coursesService.monitoring(id, user);
+  }
+
+  @Get(':id/purchase-count')
+  @Public()
+  @ResponseMessage('Lấy số lượng mua khóa học thành công!')
+  getPurchaseCount(@Param('id') id: string) {
+    return this.coursesService.getPurchaseCount(id);
   }
 
   @Put('approval/:id')

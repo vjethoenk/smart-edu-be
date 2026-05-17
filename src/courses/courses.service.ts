@@ -229,4 +229,79 @@ export class CoursesService {
   remove(id: string) {
     return this.courseModel.findByIdAndDelete(id).exec();
   }
+
+  async getPurchaseCount(id: string) {
+    const course = await this.courseModel.findById(id).exec();
+    if (!course) {
+      throw new NotFoundException('Không tìm thấy khóa học');
+    }
+
+    const purchaseCount = await this.enrollmentModel
+      .countDocuments({
+        courseId: id,
+        status: 'ACTIVE',
+      })
+      .exec();
+
+    return {
+      courseId: id,
+      courseTitle: course.title,
+      purchaseCount,
+    };
+  }
+
+  async getTotalStudentsPurchased() {
+    const totalStudents = await this.enrollmentModel.distinct('userId').exec();
+
+    return {
+      totalStudents: totalStudents.length,
+      studentsCount: totalStudents.length,
+    };
+  }
+
+  async getPurchaseStats() {
+    const stats = await this.enrollmentModel.aggregate([
+      {
+        $match: { status: 'ACTIVE' },
+      },
+      {
+        $group: {
+          _id: '$courseId',
+          purchaseCount: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$userId' },
+        },
+      },
+      {
+        $addFields: {
+          uniqueUserCount: { $size: '$uniqueUsers' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'courseInfo',
+        },
+      },
+      {
+        $unwind: '$courseInfo',
+      },
+      {
+        $project: {
+          courseId: '$_id',
+          courseTitle: '$courseInfo.title',
+          price: '$courseInfo.price',
+          purchaseCount: 1,
+          uniqueUserCount: 1,
+          _id: 0,
+        },
+      },
+      {
+        $sort: { purchaseCount: -1 },
+      },
+    ]);
+
+    return stats;
+  }
 }
