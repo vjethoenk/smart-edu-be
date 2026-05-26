@@ -126,9 +126,9 @@ export class CoursesService {
       throw new NotFoundException('Không tìm thấy khóa học');
     }
 
-    if (user.role.name !== 'ADMIN') {
-      throw new ForbiddenException('Bạn không có quyền thực hiện thao tác này');
-    }
+    // if (user.role.name === 'ADMIN' || user.role.name === 'INSTRUCTOR') {
+    //   throw new ForbiddenException('Bạn không có quyền thực hiện thao tác này');
+    // }
 
     course.status = status;
 

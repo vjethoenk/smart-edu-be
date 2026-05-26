@@ -237,7 +237,8 @@ export class QuestionsService {
       if (questionMatch) {
         if (currentQuestion) {
           if (correctAnswerLetter && currentOptionsMap[correctAnswerLetter]) {
-            currentQuestion.correctAnswer = currentOptionsMap[correctAnswerLetter];
+            currentQuestion.correctAnswer =
+              currentOptionsMap[correctAnswerLetter];
           }
           questions.push(currentQuestion);
         }
@@ -356,7 +357,7 @@ export class QuestionsService {
           options: q.options,
           correctAnswer: q.correctAnswer,
           score: q.score || 1,
-          status: 'pending',
+          status: 'approved',
           createBy: {
             _id: new Types.ObjectId(user._id),
             email: user.email,
@@ -378,7 +379,7 @@ export class QuestionsService {
         count: saved.length,
         data: saved,
       };
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof BadRequestException) {
         throw err;
       }

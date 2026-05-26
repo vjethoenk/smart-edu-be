@@ -23,9 +23,6 @@ export class RegisterUserDto {
   @IsNotEmpty({ message: 'Email không được bỏ trống' })
   email!: string;
 
-  // @IsNotEmpty({ message: 'Phone không được bỏ trống' })
-  // phone!: string;
-
   @IsNotEmpty({ message: 'Password không được bỏ trống' })
   password!: string;
 
