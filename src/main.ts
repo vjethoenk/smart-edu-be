@@ -5,11 +5,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { TransformInterceptor } from './core/transform.interceptor';
 import cookieParser from 'cookie-parser';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') || 3000;
+
+  // Enable WebSocket
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   //version
   app.setGlobalPrefix('v1', { exclude: [''] });

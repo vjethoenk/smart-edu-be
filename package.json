@@ -29,6 +29,8 @@
     "@nestjs/mongoose": "11.0.4",
     "@nestjs/passport": "11.0.5",
     "@nestjs/platform-express": "11.1.16",
+    "@nestjs/websockets": "11.1.16",
+    "@nestjs/platform-socket.io": "11.1.16",
     "@payos/node": "2.0.5",
     "@types/bcrypt": "6.0.0",
     "bcrypt": "6.0.0",
@@ -51,6 +53,7 @@
     "qrcode": "1.5.4",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
+    "socket.io": "4.7.2",
     "uuid": "13.0.0"
   },
   "devDependencies": {

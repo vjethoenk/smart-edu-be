@@ -5,8 +5,6 @@ import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { CategoriesModule } from './categories/categories.module';
 import { RoleModule } from './role/role.module';
 import { S3Service } from './common/services/s3/s3.service';
@@ -25,6 +23,7 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { CartModule } from './cart/cart.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -72,6 +71,8 @@ import { PromotionsModule } from './promotions/promotions.module';
     CartModule,
 
     PromotionsModule,
+
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [
