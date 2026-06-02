@@ -25,6 +25,7 @@ import { CartModule } from './cart/cart.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { ChatModule } from './chat/chat.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     PromotionsModule,
     ChatModule,
     StatisticsModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [
