@@ -18,6 +18,8 @@ import type { IUser } from 'src/user/user.interface';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AttemptAnswersService } from 'src/attempt-answers/attempt-answers.service';
 import { QuizzesService } from 'src/quizzes/quizzes.service';
+import { QuestionsService } from 'src/questions/questions.service';
+import { TrackingService } from 'src/tracking/tracking.service';
 
 @Controller('attempts')
 @UseGuards(JwtAuthGuard)
@@ -28,6 +30,10 @@ export class AttemptsController {
     private readonly attemptAnswersService: AttemptAnswersService,
     @Inject(QuizzesService)
     private readonly quizzesService: QuizzesService,
+    @Inject(QuestionsService)
+    private readonly questionsService: QuestionsService,
+    @Inject(TrackingService)
+    private readonly trackingService: TrackingService,
   ) {}
 
   /**
@@ -92,6 +98,10 @@ export class AttemptsController {
     }
 
     // TODO: Get correctAnswer từ QuizQuestion để kiểm tra
+    const correctAnswer = await this.questionsService.getCorrectAnswer(
+      body.questionId,
+    );
+
     // Tạm thời: chỉ lưu, không check
     const answer = await this.attemptAnswersService.create(
       {
@@ -99,7 +109,7 @@ export class AttemptsController {
         questionId: body.questionId,
         selectedAnswer: body.selectedAnswer,
       } as any,
-      '', // correctAnswer sẽ được fetch từ DB
+      correctAnswer,
     );
 
     return answer;
@@ -139,6 +149,13 @@ export class AttemptsController {
 
     // Xác định pass/fail
     const isPassed = gradeResult.totalScore >= quiz.passScore;
+
+    if (isPassed) {
+      await this.trackingService.markQuizCompletedForUser(
+        user._id.toString(),
+        quiz._id.toString(),
+      );
+    }
 
     return {
       attemptId: submittedAttempt._id,

@@ -54,7 +54,7 @@ export class TrackingService {
     private readonly enrollmentModel: Model<EnrollmentDocument>,
     @InjectModel(Quiz.name)
     private readonly quizModel: Model<QuizDocument>,
-  ) {}
+  ) { }
 
   async create(createTrackingDto: CreateTrackingDto, user: IUser) {
     const lesson = await this.lessonModel
@@ -348,26 +348,6 @@ export class TrackingService {
       progress.startedAt ||= new Date();
       return;
     }
-
-    if (dto.event !== TrackingEvent.COMPLETE) {
-      return;
-    }
-
-    const quiz = await this.quizModel.findById(lesson.quizId).exec();
-    if (!quiz) {
-      throw new NotFoundException('Quiz not found for lesson');
-    }
-
-    const score = dto.score ?? 0;
-    if (quiz.passScore && score < quiz.passScore) {
-      progress.progressPercent = 0;
-      progress.isCompleted = false;
-      return;
-    }
-
-    progress.progressPercent = 100;
-    progress.isCompleted = true;
-    progress.completedAt ||= new Date();
   }
 
   private normalizeCurrentTime(currentTime: number, totalDuration: number) {
@@ -410,16 +390,19 @@ export class TrackingService {
     const completedLessons = await this.lessonProgressModel
       .countDocuments({
         userId: new Types.ObjectId(userId),
-        courseId,
+        $or: [
+          { courseId: new Types.ObjectId(courseId) },
+          { courseId: courseId.toString() }
+        ],
         isCompleted: true,
       })
       .exec();
 
     const progressPercent = totalLessons
       ? Math.min(
-          100,
-          Math.round((completedLessons / totalLessons) * 100 * 100) / 100,
-        )
+        100,
+        Math.round((completedLessons / totalLessons) * 100 * 100) / 100,
+      )
       : 0;
 
     await this.courseProgressModel
@@ -466,5 +449,40 @@ export class TrackingService {
     }
 
     return courseProgress;
+  }
+
+  async markQuizCompletedForUser(userId: string, quizId: string) {
+    const lesson = await this.lessonModel.findOne({ quizId }).exec();
+    if (!lesson) {
+      return;
+    }
+
+    const filter = {
+      userId: new Types.ObjectId(userId),
+      lessonId: lesson._id,
+      itemType: TrackingItemType.QUIZ,
+    };
+
+    const update = {
+      $set: {
+        progressPercent: 100,
+        isCompleted: true,
+        completedAt: new Date(),
+      },
+      $setOnInsert: {
+        courseId: lesson.courseId,
+      },
+    };
+
+    const test = await this.lessonProgressModel
+      .findOneAndUpdate(filter, update, {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      })
+      .exec();
+
+    await this.recalculateCourseProgress(userId, lesson.courseId);
+    return test;
   }
 }

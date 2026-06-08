@@ -5,12 +5,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Attempt, AttemptSchema } from './schemas/attempt.schema';
 import { AttemptAnswersModule } from 'src/attempt-answers/attempt-answers.module';
 import { QuizzesModule } from 'src/quizzes/quizzes.module';
+import { QuestionsModule } from 'src/questions/questions.module';
+import { TrackingModule } from 'src/tracking/tracking.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Attempt.name, schema: AttemptSchema }]),
     AttemptAnswersModule,
     QuizzesModule,
+    QuestionsModule,
+    TrackingModule,
   ],
   controllers: [AttemptsController],
   providers: [AttemptsService],

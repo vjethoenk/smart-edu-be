@@ -297,6 +297,14 @@ export class QuestionsService {
     return questions;
   }
 
+  async getCorrectAnswer(questionId: string) {
+    const question = await this.questionModel.findById(questionId).exec();
+    if (!question || question.isDeleted) {
+      throw new NotFoundException('Không tìm thấy câu hỏi');
+    }
+    return question.correctAnswer;
+  }
+
   /**
    * Import danh sách câu hỏi từ file Word (.docx)
    */

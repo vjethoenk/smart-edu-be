@@ -32,6 +32,9 @@ export class AttemptAnswersService {
       questionId: new Types.ObjectId(createAttemptAnswerDto.questionId),
     });
 
+    // console.log('Correct Answer:', correctAnswer);
+    // console.log('Selected Answer:', createAttemptAnswerDto.selectedAnswer);
+
     const isCorrect = createAttemptAnswerDto.selectedAnswer === correctAnswer;
     const score = isCorrect ? 1 : 0;
 
