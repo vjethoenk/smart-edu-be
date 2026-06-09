@@ -170,12 +170,17 @@ export class StatisticsService {
             sales: { $sum: 1 },
           },
         },
-        { $sort: { revenue: -1 } },
-        { $limit: limit },
+        {
+          $addFields: {
+            courseObjectId: {
+              $toObjectId: '$_id',
+            },
+          },
+        },
         {
           $lookup: {
             from: 'courses',
-            localField: '_id',
+            localField: 'courseObjectId',
             foreignField: '_id',
             as: 'course',
           },
@@ -195,21 +200,45 @@ export class StatisticsService {
 
     if (type === 'sales' || type === 'students') {
       const pipeline = [
-        { $group: { _id: '$courseId', students: { $sum: 1 } } },
+        {
+          $group: {
+            _id: '$courseId',
+            students: { $sum: 1 },
+          },
+        },
+        {
+          $addFields: {
+            courseObjectId: {
+              $toObjectId: '$_id',
+            },
+          },
+        },
         { $sort: { students: -1 } },
         { $limit: limit },
         {
           $lookup: {
             from: 'courses',
-            localField: '_id',
+            localField: 'courseObjectId',
             foreignField: '_id',
             as: 'course',
           },
         },
-        { $unwind: { path: '$course', preserveNullAndEmptyArrays: true } },
-        { $project: { courseId: '$_id', title: '$course.title', students: 1 } },
+        {
+          $unwind: {
+            path: '$course',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            courseId: '$_id',
+            title: '$course.title',
+            students: 1,
+          },
+        },
       ];
-      return (this.enrollmentModel as any).aggregate(pipeline);
+
+      return (this.paymentModel as any).aggregate(pipeline);
     }
 
     // rating not available in current schema

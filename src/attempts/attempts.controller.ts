@@ -203,6 +203,7 @@ export class AttemptsController {
       incorrectCount: gradeResult.incorrectCount,
       isPassed,
       status: attempt.status,
+      quizId: quiz._id,
     };
   }
 
@@ -223,6 +224,19 @@ export class AttemptsController {
       quizId,
       parseInt(skip || '0'),
       parseInt(limit || '10'),
+    );
+  }
+
+  /**
+   * HỌC SINH LẤY LẦN LÀM MỚI NHẤT THEO QUIZ
+   * GET /attempts/quiz/:quizId/latest
+   */
+  @Get('quiz/:quizId/latest')
+  @ResponseMessage('Lấy lần làm bài mới nhất theo quiz thành công!')
+  findLatestByQuiz(@User() user: IUser, @Param('quizId') quizId: string) {
+    return this.attemptsService.findLatestAttemptByQuiz(
+      user._id.toString(),
+      quizId,
     );
   }
 

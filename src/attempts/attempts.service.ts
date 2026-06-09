@@ -76,6 +76,24 @@ export class AttemptsService {
     };
   }
 
+  async findLatestAttemptByQuiz(userId: string, quizId: string) {
+    const latestAttempt = await this.attemptModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        quizId: new Types.ObjectId(quizId),
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (!latestAttempt) {
+      throw new NotFoundException(
+        'Không tìm thấy lần làm bài mới nhất cho quiz này',
+      );
+    }
+
+    return latestAttempt;
+  }
+
   /**
    * ✅ HỌC SINH NỘP BÀI (SUBMIT)
    * Hệ thống sẽ:
