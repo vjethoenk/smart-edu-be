@@ -38,7 +38,10 @@ export class UserService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid ID');
     }
-    return this.userModel.findOne({ _id: id });
+    return this.userModel.findOne({ _id: id }).populate({
+      path: 'role',
+      select: { name: 1 },
+    });
   }
 
   findOneByUserName(username: string) {
@@ -60,11 +63,20 @@ export class UserService {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid ID');
     }
-    const hashPassword = this.getHashPassword(updateUserDto.password as string);
-    let user = await this.userModel.updateOne(
-      { _id: id },
-      { ...updateUserDto, password: hashPassword },
-    );
+    const updateData: any = { ...updateUserDto };
+    if (updateUserDto.password && updateUserDto.password.trim() !== "") {
+      updateData.password = this.getHashPassword(updateUserDto.password);
+    } else {
+      delete updateData.password;
+    }
+    const user = await this.userModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true },
+    ).populate({
+      path: 'role',
+      select: { name: 1 },
+    });
     return user;
   }
 

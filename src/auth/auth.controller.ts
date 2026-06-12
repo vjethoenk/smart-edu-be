@@ -10,6 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { Public, ResponseMessage, User } from 'src/decorator/customize';
 import type { IUser } from 'src/user/user.interface';
+import { UserService } from 'src/user/user.service';
 import type { Request, Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
@@ -18,8 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    // private roleService: RoleService,
-    // private readonly mailerService: MailerService,
+    private userService: UserService,
   ) {}
 
   @Post('login')
@@ -36,7 +36,11 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return { user };
+    const latestUser = await this.userService.findOne(user._id);
+    if (!latestUser) {
+      throw new UnauthorizedException('User not found in database');
+    }
+    return { user: latestUser };
   }
 
   @Get('refresh')
