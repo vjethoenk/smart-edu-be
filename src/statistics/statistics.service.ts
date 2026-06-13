@@ -200,6 +200,7 @@ export class StatisticsService {
 
     if (type === 'sales' || type === 'students') {
       const pipeline = [
+        { $match: { status: 'SUCCESS' } },
         {
           $group: {
             _id: '$courseId',
@@ -240,8 +241,6 @@ export class StatisticsService {
 
       return (this.paymentModel as any).aggregate(pipeline);
     }
-
-    // rating not available in current schema
     return [];
   }
 

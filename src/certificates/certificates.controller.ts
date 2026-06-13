@@ -6,7 +6,12 @@ import * as express from 'express';
 
 @Controller('certificates')
 export class CertificatesController {
-  constructor(private readonly certificatesService: CertificatesService) { }
+  constructor(private readonly certificatesService: CertificatesService) {}
+
+  @Get('me')
+  getMyCertificates(@User() user: IUser) {
+    return this.certificatesService.getUserCertificates(user._id);
+  }
 
   @Get('course/:courseId')
   @ResponseMessage('Nhận chứng chỉ thành công!')

@@ -1,8 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Certificate, CertificateDocument } from './schemas/certificate.schema';
-import { CourseProgress, CourseProgressDocument } from 'src/tracking/schemas/course-progress.schema';
+import {
+  CourseProgress,
+  CourseProgressDocument,
+} from 'src/tracking/schemas/course-progress.schema';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
 import { getCertificateTemplate } from './templates/certificate-template';
@@ -18,7 +25,7 @@ export class CertificatesService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
-  ) { }
+  ) {}
 
   private generateCode(): string {
     const year = new Date().getFullYear();
@@ -73,6 +80,15 @@ export class CertificatesService {
       .findById(certificate._id)
       .populate('userId', 'name email')
       .populate('courseId', 'title')
+      .exec();
+  }
+
+  async getUserCertificates(userId: string) {
+    return this.certificateModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .populate('courseId', 'title')
+      .populate('userId', 'name email')
+      .sort({ issuedAt: -1 })
       .exec();
   }
 
