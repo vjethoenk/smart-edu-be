@@ -24,6 +24,12 @@ export class PaymentsController {
     return this.paymentsService.handleWebhook(body);
   }
 
+  @Get()
+  @ResponseMessage('Lấy danh sách tất cả đơn thanh toán thành công!')
+  findAll() {
+    return this.paymentsService.findAll();
+  }
+
   @Get(':id')
   @ResponseMessage('Lấy trạng thái thanh toán thành công!')
   getPayment(@Param('id') id: string) {

@@ -7,12 +7,14 @@ import {
   Enrollment,
   EnrollmentSchema,
 } from '../enrollments/schemas/enrollment.schema';
+import { Course, CourseSchema } from '../courses/schemas/course.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Payment.name, schema: PaymentSchema },
       { name: Enrollment.name, schema: EnrollmentSchema },
+      { name: Course.name, schema: CourseSchema },
     ]),
   ],
   controllers: [PaymentsController],

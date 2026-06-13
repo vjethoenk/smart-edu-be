@@ -34,14 +34,18 @@ export class UserService {
     return this.userModel.find().exec();
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid ID');
     }
-    return this.userModel.findOne({ _id: id }).populate({
-      path: 'role',
-      select: { name: 1 },
-    });
+
+    return this.userModel
+      .findById(id)
+      .select('-password')
+      .populate({
+        path: 'role',
+        select: { name: 1 },
+      });
   }
 
   findOneByUserName(username: string) {
@@ -64,19 +68,17 @@ export class UserService {
       throw new BadRequestException('Invalid ID');
     }
     const updateData: any = { ...updateUserDto };
-    if (updateUserDto.password && updateUserDto.password.trim() !== "") {
+    if (updateUserDto.password && updateUserDto.password.trim() !== '') {
       updateData.password = this.getHashPassword(updateUserDto.password);
     } else {
       delete updateData.password;
     }
-    const user = await this.userModel.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true },
-    ).populate({
-      path: 'role',
-      select: { name: 1 },
-    });
+    const user = await this.userModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .populate({
+        path: 'role',
+        select: { name: 1 },
+      });
     return user;
   }
 

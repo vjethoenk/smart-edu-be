@@ -203,4 +203,16 @@ export class PaymentsService {
 
     return { status: payment.status };
   }
+
+  async findAll() {
+    return this.paymentModel
+      .find()
+      .populate({
+        path: 'courseId',
+        model: 'Course',
+        select: 'title thumbnail price description level',
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
 }
