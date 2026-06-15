@@ -42,15 +42,26 @@ export class StatisticsService {
 
     const instructorsAgg = await this.userModel.aggregate([
       {
+        $addFields: {
+          roleObjectId: {
+            $cond: {
+              if: { $eq: [{ $type: '$role' }, 'string'] },
+              then: { $toObjectId: '$role' },
+              else: '$role',
+            },
+          },
+        },
+      },
+      {
         $lookup: {
           from: 'roles',
-          localField: 'role',
+          localField: 'roleObjectId',
           foreignField: '_id',
           as: 'roleDoc',
         },
       },
       { $unwind: { path: '$roleDoc', preserveNullAndEmptyArrays: true } },
-      { $match: { 'roleDoc.name': { $regex: /(teacher|instructor)/i } } },
+      { $match: { 'roleDoc.name': { $regex: /(teacher|INSTRUCTOR)/i } } },
       { $count: 'count' },
     ]);
     const totalInstructors = instructorsAgg[0]?.count || 0;
