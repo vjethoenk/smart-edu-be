@@ -195,6 +195,35 @@ export class PromotionsService {
       throw new BadRequestException('Khuyến mãi không hợp lệ cho khóa học này');
     }
 
+    // Check usage limit
+    if (
+      promotion.maxUsageCount &&
+      promotion.usedCount >= promotion.maxUsageCount
+    ) {
+      throw new BadRequestException('Khuyến mãi này đã hết lượt sử dụng');
+    }
+
     return promotion;
+  }
+
+  async findActivePromotionForCourse(courseId: string): Promise<PromotionDocument | null> {
+    const now = new Date();
+    const promotions = await this.promotionModel.find({
+      courseId: new Types.ObjectId(courseId),
+      isDeleted: false,
+      isActive: true,
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    }).exec();
+
+    // Lọc những promotion còn lượt sử dụng
+    const activePromotions = promotions.filter(p => 
+      !p.maxUsageCount || p.usedCount < p.maxUsageCount
+    );
+
+    if (activePromotions.length === 0) return null;
+
+    // Trả về promotion có mức giảm giá cao nhất
+    return activePromotions.sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
   }
 }

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Payment, PaymentDocument } from './schemas/payment.schema';
 import { PayOS } from '@payos/node';
@@ -13,6 +13,7 @@ import {
   Enrollment,
   EnrollmentDocument,
 } from '../enrollments/schemas/enrollment.schema';
+import { PromotionsService } from '../promotions/promotions.service';
 
 @Injectable()
 export class PaymentsService {
@@ -23,6 +24,7 @@ export class PaymentsService {
     @InjectModel(Enrollment.name)
     private enrollmentModel: Model<EnrollmentDocument>,
     private configService: ConfigService,
+    private promotionsService: PromotionsService,
   ) {
     const clientId = this.configService.get<string>('PAYOS_CLIENT_ID');
     const apiKey = this.configService.get<string>('PAYOS_API_KEY');
@@ -46,7 +48,20 @@ export class PaymentsService {
       amount,
       courseId,
       orderInfo = 'Thanh toán khóa học',
+      promotionId,
     } = createPaymentDto;
+
+    // Validate promotion if provided, or find active promotion automatically
+    let resolvedPromotionId: Types.ObjectId | undefined = undefined;
+    if (promotionId) {
+      const promotion = await this.promotionsService.validatePromotion(promotionId, courseId);
+      resolvedPromotionId = promotion._id as Types.ObjectId;
+    } else {
+      const activePromotion = await this.promotionsService.findActivePromotionForCourse(courseId);
+      if (activePromotion) {
+        resolvedPromotionId = activePromotion._id as Types.ObjectId;
+      }
+    }
 
     const orderCode = Date.now();
 
@@ -78,6 +93,7 @@ export class PaymentsService {
         checkoutUrl: paymentLinkResponse.checkoutUrl,
         orderInfo,
         status: 'PENDING',
+        promotionId: resolvedPromotionId,
       });
 
       return {
@@ -144,13 +160,17 @@ export class PaymentsService {
         status: 'ACTIVE',
         enrolledAt: new Date(),
       });
+
+      if (payment.promotionId) {
+        await this.promotionsService.incrementUsageCount(payment.promotionId.toString());
+      }
     } else {
       payment.status = 'FAILED';
     }
 
     await payment.save();
 
-    console.log('PAYMENT UPDATED:', payment.status);
+    // console.log('PAYMENT UPDATED:', payment.status);
 
     return { message: 'OK' };
   }
@@ -191,10 +211,14 @@ export class PaymentsService {
 
     if (payment.status === 'PENDING') {
       try {
-        const payosOrder = await this.payOS.getPaymentInstruction(orderCode);
+        const payosOrder = await this.payOS.getPaymentLinkInformation(orderCode);
         if (payosOrder.status === 'PAID') {
           payment.status = 'SUCCESS';
           await payment.save();
+
+          if (payment.promotionId) {
+            await this.promotionsService.incrementUsageCount(payment.promotionId.toString());
+          }
         }
       } catch (error) {
         console.error('Lỗi khi check trạng thái PayOS:', error);

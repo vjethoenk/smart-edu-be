@@ -41,6 +41,9 @@ export class Payment {
 
   @Prop({ default: null })
   confirmedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'Promotion', default: null })
+  promotionId?: Types.ObjectId;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

@@ -8,6 +8,7 @@ import {
   EnrollmentSchema,
 } from '../enrollments/schemas/enrollment.schema';
 import { Course, CourseSchema } from '../courses/schemas/course.schema';
+import { PromotionsModule } from '../promotions/promotions.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Course, CourseSchema } from '../courses/schemas/course.schema';
       { name: Enrollment.name, schema: EnrollmentSchema },
       { name: Course.name, schema: CourseSchema },
     ]),
+    PromotionsModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],

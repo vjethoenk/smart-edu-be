@@ -18,4 +18,8 @@ export class CreatePaymentDto {
   @IsString()
   @IsOptional()
   orderInfo?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  promotionId?: string;
 }
