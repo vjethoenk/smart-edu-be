@@ -105,7 +105,7 @@ export const getCertificateTemplate = (
   </g>
   
   <!-- ===== MAIN TITLE ===== -->
-  <text x="560" y="210" class="cert-title">CHỨNG CHỈ</text>
+  <text x="560" y="210" class="cert-title">GIẤY KHEN</text>
   
   <g transform="translate(560, 230)">
     <line x1="-120" y1="0" x2="-40" y2="0" stroke="#D4AF37" stroke-width="1"/>
@@ -148,7 +148,7 @@ export const getCertificateTemplate = (
   
   <!-- Certificate Code -->
   <g transform="translate(250, 640)">
-    <text x="0" y="-6" class="label-text">Mã chứng chỉ</text>
+    <text x="0" y="-6" class="label-text">Mã giấy khen</text>
     <rect x="-90" y="0" width="180" height="22" rx="4" fill="#F5F0E6" stroke="#D4AF37" stroke-width="0.5"/>
     <text x="0" y="15" class="value-text" font-weight="bold">${certificateCode}</text>
   </g>
@@ -179,7 +179,7 @@ export const getCertificateTemplate = (
   </g>
   
   <!-- Footer -->
-  <text x="560" y="695" class="footer-text">Chứng chỉ này có giá trị kiểm tra tại www.smartedu.vn/verify | Mã số: ${certificateCode}</text>
+  <text x="560" y="695" class="footer-text">Giấy khen này có giá trị kiểm tra tại www.smartedu.vn/verify | Mã số: ${certificateCode}</text>
   
   <!-- QR Code -->
   <g transform="translate(70, 660)" opacity="0.35">

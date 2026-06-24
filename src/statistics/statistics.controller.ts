@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
+import { Public } from 'src/decorator/customize';
 
 @Controller('statistics')
 export class StatisticsController {
@@ -26,6 +27,7 @@ export class StatisticsController {
   }
 
   @Get('courses/top')
+  @Public()
   async topCourses(
     @Query('type') type?: string,
     @Query('limit') limit?: string,
@@ -35,12 +37,14 @@ export class StatisticsController {
   }
 
   @Get('courses/completion-rate')
+  @Public()
   async courseCompletionRates(@Query('limit') limit?: string) {
     const lim = limit ? parseInt(limit) : 20;
     return this.stats.getCourseCompletionRates(lim);
   }
 
   @Get('students/new')
+  @Public()
   async newStudents(
     @Query('start') start?: string,
     @Query('end') end?: string,
@@ -49,6 +53,7 @@ export class StatisticsController {
   }
 
   @Get('students/active')
+  @Public()
   async activeStudents(
     @Query('start') start?: string,
     @Query('end') end?: string,
