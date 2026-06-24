@@ -15,7 +15,7 @@ export class LessonProgress {
   @Prop({ type: Types.ObjectId, required: true, ref: 'Course' })
   courseId!: Types.ObjectId;
 
-  @Prop({ enum: Object.values(TrackingItemType), required: true })
+  @Prop({ type: String, enum: Object.values(TrackingItemType), required: true })
   itemType!: TrackingItemType;
 
   @Prop({ default: 0 })
