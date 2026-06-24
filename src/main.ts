@@ -31,9 +31,13 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
+    origin: [
+      'https://smart-edu-fe.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:8081',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 

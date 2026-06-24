@@ -25,7 +25,12 @@ import { Types } from 'mongoose';
 @WebSocketGateway({
   namespace: 'chat',
   cors: {
-    origin: true,
+    origin: [
+      'https://smart-edu-fe.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:8081',
+    ],
     methods: ['GET', 'POST'],
     credentials: true,
   },
