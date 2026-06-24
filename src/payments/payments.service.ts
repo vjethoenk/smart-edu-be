@@ -71,10 +71,10 @@ export class PaymentsService {
       description: orderInfo,
       returnUrl:
         this.configService.get<string>('PAYOS_RETURN_URL') ||
-        'http://localhost:3000/payments/success',
+        'https://smart-edu-fe.vercel.app/payments/success',
       cancelUrl:
         this.configService.get<string>('PAYOS_CANCEL_URL') ||
-        'http://localhost:3000/payments/cancel',
+        'https://smart-edu-fe.vercel.app/payments/cancel',
     };
 
     try {
