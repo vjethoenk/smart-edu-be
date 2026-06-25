@@ -54,10 +54,14 @@ export class PaymentsService {
     // Validate promotion if provided, or find active promotion automatically
     let resolvedPromotionId: Types.ObjectId | undefined = undefined;
     if (promotionId) {
-      const promotion = await this.promotionsService.validatePromotion(promotionId, courseId);
+      const promotion = await this.promotionsService.validatePromotion(
+        promotionId,
+        courseId,
+      );
       resolvedPromotionId = promotion._id as Types.ObjectId;
     } else {
-      const activePromotion = await this.promotionsService.findActivePromotionForCourse(courseId);
+      const activePromotion =
+        await this.promotionsService.findActivePromotionForCourse(courseId);
       if (activePromotion) {
         resolvedPromotionId = activePromotion._id as Types.ObjectId;
       }
@@ -162,7 +166,9 @@ export class PaymentsService {
       });
 
       if (payment.promotionId) {
-        await this.promotionsService.incrementUsageCount(payment.promotionId.toString());
+        await this.promotionsService.incrementUsageCount(
+          payment.promotionId.toString(),
+        );
       }
     } else {
       payment.status = 'FAILED';
@@ -211,13 +217,15 @@ export class PaymentsService {
 
     if (payment.status === 'PENDING') {
       try {
-        const payosOrder = await this.payOS.getPaymentLinkInformation(orderCode);
+        const payosOrder = await this.payOS.paymentRequests.getPaymentLinkInformation(orderCode);
         if (payosOrder.status === 'PAID') {
           payment.status = 'SUCCESS';
           await payment.save();
 
           if (payment.promotionId) {
-            await this.promotionsService.incrementUsageCount(payment.promotionId.toString());
+            await this.promotionsService.incrementUsageCount(
+              payment.promotionId.toString(),
+            );
           }
         }
       } catch (error) {

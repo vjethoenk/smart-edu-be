@@ -46,7 +46,14 @@ export class StatisticsService {
           roleObjectId: {
             $cond: {
               if: { $eq: [{ $type: '$role' }, 'string'] },
-              then: { $toObjectId: '$role' },
+              then: {
+                $convert: {
+                  input: '$role',
+                  to: 'objectId',
+                  onError: null,
+                  onNull: null,
+                },
+              },
               else: '$role',
             },
           },
