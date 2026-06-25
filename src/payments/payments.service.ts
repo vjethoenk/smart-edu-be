@@ -41,6 +41,9 @@ export class PaymentsService {
       apiKey,
       checksumKey,
     });
+
+    console.log('[PayOS] Khởi tạo PayOS thành công');
+    console.log('[PayOS] paymentRequests methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(this.payOS.paymentRequests)));
   }
 
   async create(createPaymentDto: CreatePaymentDto, user: any) {
@@ -217,15 +220,21 @@ export class PaymentsService {
 
     if (payment.status === 'PENDING') {
       try {
-        const payosOrder = await this.payOS.paymentRequests.getPaymentLinkInformation(orderCode);
-        if (payosOrder.status === 'PAID') {
-          payment.status = 'SUCCESS';
-          await payment.save();
+        if (!this.payOS || !this.payOS.paymentRequests) {
+          console.error('[PayOS] payOS chưa được khởi tạo!');
+        } else {
+          console.log('[PayOS] Gọi paymentRequests.get với orderCode:', orderCode);
+          const payosOrder = await this.payOS.paymentRequests.get(orderCode);
+          console.log('[PayOS] Kết quả:', payosOrder?.status);
+          if (payosOrder.status === 'PAID') {
+            payment.status = 'SUCCESS';
+            await payment.save();
 
-          if (payment.promotionId) {
-            await this.promotionsService.incrementUsageCount(
-              payment.promotionId.toString(),
-            );
+            if (payment.promotionId) {
+              await this.promotionsService.incrementUsageCount(
+                payment.promotionId.toString(),
+              );
+            }
           }
         }
       } catch (error) {
